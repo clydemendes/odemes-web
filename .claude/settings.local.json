@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/clydemendes/Desktop/My App/odemes site/**)",
+      "Bash(npx create-next-app@latest odemes-app --typescript --tailwind --app --no-eslint --no-src-dir --import-alias \"@/*\" --use-npm --yes)",
+      "Bash(npm install *)",
+      "Bash(npx shadcn@latest init -d)",
+      "Bash(npx shadcn@latest add -y input label dialog select tabs badge separator alert skeleton card)",
+      "Bash(node -e \"const p = require\\('/Users/clydemendes/Desktop/My App/odemes site/odemes-app/node_modules/next/package.json'\\); console.log\\(p.version\\)\")",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/home)",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3001/home)",
+      "Read(//tmp/**)",
+      "Bash(python3 -m http.server 3456)",
+      "Bash(open \"http://localhost:3456/Odemes%20Website.html\")",
+      "Bash(\"/Users/clydemendes/Desktop/My App/odemes site/odemes-app/node_modules/.bin/tsc\" --noEmit --project \"/Users/clydemendes/Desktop/My App/odemes site/odemes-app/tsconfig.json\")",
+      "Bash(open \"/Users/clydemendes/Desktop/My App/odemes site/odemes web/Odemes Website.html\")",
+      "Bash(python3 -m http.server 3000)",
+      "Bash(open \"http://localhost:3000\")",
+      "Bash(python3 -m http.server 8080)",
+      "Bash(python3 -m http.server 8888)",
+      "Bash(open \"http://localhost:8888\")",
+      "Bash(ps -p 46028 -o command=)",
+      "Bash(open \"/Users/clydemendes/Desktop/My App/odemes site/odemes-app/.env.local\")",
+      "Bash(open -a \"Visual Studio Code\" \"/Users/clydemendes/Desktop/My App/odemes site/odemes-app/.env.local\")",
+      "Bash(open -a \"TextEdit\" \"/Users/clydemendes/Desktop/My App/odemes site/odemes-app/.env.local\")",
+      "Bash(kill 46028)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ]
+  }
+}
