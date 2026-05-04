@@ -31,7 +31,7 @@ function PageSettings({ tweaks, setTweak }) {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-        <div className="card">
+        <div className="card" style={{ gridColumn: '1 / -1' }}>
           <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>{t('settings.accountSection')}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderBottom: '1px solid var(--border-soft)' }}>
             <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg, var(--accent), var(--accent-deep))', color: '#fff', fontWeight: 700, display: 'grid', placeItems: 'center' }}>JM</div>
@@ -59,15 +59,11 @@ function PageSettings({ tweaks, setTweak }) {
               <option value="fr">Français</option>
             </select>
           } />
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '14px 0 6px' }}>{t('settings.appearance')}</div>
+          <Row title={t('settings.darkMode')} sub={t('settings.darkModeSub')} control={<Toggle on={tweaks.theme === 'dark'} onClick={() => setTweak('theme', tweaks.theme === 'dark' ? 'light' : 'dark')} />} />
           <Row title={t('settings.reminderTime')} sub={t('settings.reminderSub')} control={
             <input className="input mono" defaultValue="09:00" style={{ width: 100 }} />
           } />
-        </div>
-
-        <div className="card">
-          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>{t('settings.appearanceSection')}</div>
-          <Row title={t('settings.darkMode')}        sub={t('settings.darkModeSub')}        control={<Toggle on={tweaks.theme === 'dark'}       onClick={() => setTweak('theme', tweaks.theme === 'dark' ? 'light' : 'dark')} />} />
-          <Row title={t('settings.compactDensity')}  sub={t('settings.compactSub')}         control={<Toggle on={tweaks.density === 'compact'}    onClick={() => setTweak('density', tweaks.density === 'compact' ? 'comfortable' : 'compact')} />} />
         </div>
 
         <div className="card">

@@ -79,6 +79,8 @@ function App() {
   const [tweaks, setTweak] = useTweaks(defaults);
   const [page, setPage] = React.useState(defaults.page || 'home');
   const [authed, setAuthed] = React.useState(defaults.page !== 'auth');
+  /** Bump seq so Transactions page can open the quick-add modal from the top bar without navigating away. */
+  const [txQuickAdd, setTxQuickAdd] = React.useState({ seq: 0, kind: 'expense' });
 
   React.useEffect(() => { applyTheme(tweaks.theme); }, [tweaks.theme]);
   React.useEffect(() => { applyAccent(tweaks.accent); }, [tweaks.accent]);
@@ -94,7 +96,7 @@ function App() {
 
   let content = null;
   if (page === 'home')         content = <window.PageHome variation={tweaks.homeVariation} />;
-  if (page === 'transactions') content = <window.PageTransactions />;
+  if (page === 'transactions') content = <window.PageTransactions txQuickAdd={txQuickAdd} />;
   if (page === 'recurring')    content = <window.PageRecurring />;
   if (page === 'report')       content = <window.PageReport />;
   if (page === 'settings')     content = <window.PageSettings tweaks={tweaks} setTweak={setTweak} />;
@@ -183,7 +185,19 @@ function App() {
               right={<>
                 <button className="icon-btn"><window.Icons.search size={16} /></button>
                 <button className="icon-btn"><window.Icons.bell size={16} /></button>
-                {page !== 'home' && <NewTxnSplitButton onPick={(k) => { if (k === 'recurring') setPage('recurring'); else if (k === 'import') setPage('settings'); else setPage('home'); }} />}
+                {page !== 'home' && (
+                  <NewTxnSplitButton
+                    onPick={(k) => {
+                      if (k === 'recurring') setPage('recurring');
+                      else if (k === 'import') setPage('settings');
+                      else if (page === 'transactions' && (k === 'expense' || k === 'income')) {
+                        setTxQuickAdd((s) => ({ seq: s.seq + 1, kind: k }));
+                      } else {
+                        setPage('home');
+                      }
+                    }}
+                  />
+                )}
               </>}
             />
             <div style={{ flex: 1, minHeight: 0 }}>{content}</div>
