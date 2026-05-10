@@ -48,12 +48,12 @@ const TRANSACTIONS = [
 ];
 
 const RECURRING = [
-  { id: 'r1', category: 'Rent',         note: 'Monthly rent',   amount: 1850, type: 'expense', frequency: 'monthly', next: dayKey(0)  },
-  { id: 'r2', category: 'Salary',       note: 'Direct deposit', amount: 4250, type: 'income',  frequency: 'monthly', next: dayKey(4)  },
-  { id: 'r3', category: 'Spotify',      note: 'Family plan',    amount: 16.99,type: 'expense', frequency: 'monthly', next: dayKey(6)  },
-  { id: 'r4', category: 'Netflix',      note: 'Standard',       amount: 15.49,type: 'expense', frequency: 'monthly', next: dayKey(12) },
-  { id: 'r5', category: 'Gym',          note: 'Equinox',        amount: 240,  type: 'expense', frequency: 'monthly', next: dayKey(18) },
-  { id: 'r6', category: 'Insurance',    note: 'Renters annual', amount: 320,  type: 'expense', frequency: 'yearly',  next: dayKey(45) },
+  { id: 'r1', category: 'Rent',         note: 'Monthly rent',   amount: 1850, type: 'expense', is_recurring: true, recurring_pattern: 'monthly', date: dayKey(0)  },
+  { id: 'r2', category: 'Salary',       note: 'Direct deposit', amount: 4250, type: 'income',  is_recurring: true, recurring_pattern: 'monthly', date: dayKey(4)  },
+  { id: 'r3', category: 'Spotify',      note: 'Family plan',    amount: 16.99,type: 'expense', is_recurring: true, recurring_pattern: 'monthly', date: dayKey(6)  },
+  { id: 'r4', category: 'Netflix',      note: 'Standard',       amount: 15.49,type: 'expense', is_recurring: true, recurring_pattern: 'monthly', date: dayKey(12) },
+  { id: 'r5', category: 'Gym',          note: 'Equinox',        amount: 240,  type: 'expense', is_recurring: true, recurring_pattern: 'monthly', date: dayKey(18) },
+  { id: 'r6', category: 'Insurance',    note: 'Renters annual', amount: 320,  type: 'expense', is_recurring: true, recurring_pattern: 'yearly',  date: dayKey(45) },
 ];
 
 const CATEGORIES_EXP = ['Groceries','Dining','Coffee','Transport','Rent','Utilities','Subscriptions','Entertainment','Health','Shopping','Travel'];

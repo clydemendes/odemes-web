@@ -38,20 +38,33 @@ function PageAuth({ onSignedIn }) {
   const [showPw, setShowPw] = React.useState(false);
   const [agree, setAgree] = React.useState(false);
   const [loading, setLoading] = React.useState(null);
+  const [error, setError] = React.useState(null);
 
   const isSignup = mode === 'signup';
   const valid = /\S+@\S+\.\S+/.test(email) && password.length >= 6 && (!isSignup || (name.trim().length > 1 && agree));
 
-  const submit = (e) => {
+  const signInWithOAuth = async (provider) => {
+    setLoading(provider);
+    setError(null);
+    const { error } = await window.sb.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: window.location.origin + window.location.pathname },
+    });
+    if (error) { setError(error.message); setLoading(null); }
+    // no else — browser redirects, loading stays until navigation
+  };
+
+  const submit = async (e) => {
     e && e.preventDefault();
     if (!valid) return;
     setLoading('email');
-    setTimeout(() => { setLoading(null); onSignedIn && onSignedIn(); }, 800);
-  };
-
-  const google = () => {
-    setLoading('google');
-    setTimeout(() => { setLoading(null); onSignedIn && onSignedIn(); }, 700);
+    setError(null);
+    const { error } = isSignup
+      ? await window.sb.auth.signUp({ email, password, options: { data: { full_name: name } } })
+      : await window.sb.auth.signInWithPassword({ email, password });
+    setLoading(null);
+    if (error) setError(error.message);
+    // onAuthStateChange in app.jsx handles the navigation on success
   };
 
   return (
@@ -115,17 +128,20 @@ function PageAuth({ onSignedIn }) {
             <p>{isSignup ? t('auth.createDesc') : t('auth.welcomeDesc')}</p>
           </div>
 
-          <button className="auth-oauth" onClick={google} disabled={loading !== null}>
-            {loading === 'google'
-              ? <span className="auth-spin" />
-              : <GoogleMark />}
+          <button className="auth-oauth" onClick={() => signInWithOAuth('google')} disabled={loading !== null}>
+            {loading === 'google' ? <span className="auth-spin" /> : <GoogleMark />}
             <span>{loading === 'google' ? t('auth.connecting') : t('auth.continueGoogle')}</span>
           </button>
-          <button className="auth-oauth auth-oauth-apple" disabled>
-            <AppleMark />
-            <span>{t('auth.continueApple')}</span>
-            <span className="auth-soon">{t('auth.soon')}</span>
+          <button className="auth-oauth auth-oauth-apple" onClick={() => signInWithOAuth('apple')} disabled={loading !== null}>
+            {loading === 'apple' ? <span className="auth-spin" /> : <AppleMark />}
+            <span>{loading === 'apple' ? t('auth.connecting') : t('auth.continueApple')}</span>
           </button>
+
+          {error && (
+            <div style={{ fontSize: 13, color: 'var(--expense)', background: 'var(--expense-tint)', padding: '10px 14px', borderRadius: 8, marginTop: 4 }}>
+              {error}
+            </div>
+          )}
 
           <div className="auth-or"><span>{t('auth.orEmail')}</span></div>
 

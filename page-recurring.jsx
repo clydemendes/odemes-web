@@ -13,8 +13,8 @@ function PageRecurring() {
   const { t } = window.I18n.useT();
   const [adding, setAdding] = React.useState(false);
 
-  const monthlyOut = REC.filter(r => r.type === 'expense' && r.frequency === 'monthly').reduce((s,r) => s+r.amount, 0);
-  const monthlyIn  = REC.filter(r => r.type === 'income'  && r.frequency === 'monthly').reduce((s,r) => s+r.amount, 0);
+  const monthlyOut = REC.filter(r => r.type === 'expense' && r.recurring_pattern === 'monthly').reduce((s,r) => s+r.amount, 0);
+  const monthlyIn  = REC.filter(r => r.type === 'income'  && r.recurring_pattern === 'monthly').reduce((s,r) => s+r.amount, 0);
 
   return (
     <div className="page">
@@ -49,8 +49,8 @@ function PageRecurring() {
           <div className="card-title">{t('recurring.allRecurring')} · {REC.length}</div>
           <div className="card-sub mono">{t('recurring.sortedByDue')}</div>
         </div>
-        {REC.slice().sort((a,b) => a.next.localeCompare(b.next)).map(r => {
-          const b = dueBadge(r.next, t);
+        {REC.slice().sort((a,b) => a.date.localeCompare(b.date)).map(r => {
+          const b = dueBadge(r.date, t);
           return (
             <div key={r.id} style={{
               display: 'grid', gridTemplateColumns: '36px 1fr 110px 120px 120px auto', gap: 14, alignItems: 'center',
@@ -63,7 +63,7 @@ function PageRecurring() {
                 <div style={{ fontSize: 14, fontWeight: 600 }}>{r.category}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-3)' }}>{r.note}</div>
               </div>
-              <div className="pill neutral" style={{ textTransform: 'capitalize' }}>{r.frequency}</div>
+              <div className="pill neutral" style={{ textTransform: 'capitalize' }}>{r.recurring_pattern}</div>
               <span className={`pill ${b.cls}`}>{b.label}</span>
               <div className="mono" style={{ fontSize: 14, fontWeight: 600, color: r.type === 'income' ? 'var(--income)' : 'var(--expense)' }}>
                 {r.type === 'income' ? '+' : '−'}${r.amount.toFixed(2)}

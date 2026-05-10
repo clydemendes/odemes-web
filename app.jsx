@@ -86,6 +86,18 @@ function App() {
   React.useEffect(() => { applyAccent(tweaks.accent); }, [tweaks.accent]);
   React.useEffect(() => { document.documentElement.setAttribute('data-density', tweaks.density); }, [tweaks.density]);
 
+  // Real Supabase auth state
+  React.useEffect(() => {
+    window.sb.auth.getSession().then(({ data: { session } }) => {
+      if (session) { setAuthed(true); setPage(p => p === 'auth' ? 'home' : p); }
+    });
+    const { data: { subscription } } = window.sb.auth.onAuthStateChange((_event, session) => {
+      if (session) { setAuthed(true); setPage(p => p === 'auth' ? 'home' : p); }
+      else          { setAuthed(false); setPage('auth'); }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
   const titles = {
     home:         { title: t('nav.home'),         sub: t('topbar.homeSub') },
     transactions: { title: t('nav.transactions'), sub: t('topbar.transactionsSub') },
@@ -164,7 +176,7 @@ function App() {
             ]}
           />
           {authed && (
-            <button className="btn btn-secondary" style={{ marginTop: 8, width: '100%' }} onClick={() => { setAuthed(false); setPage('auth'); setTweak('page', 'auth'); }}>
+            <button className="btn btn-secondary" style={{ marginTop: 8, width: '100%' }} onClick={() => { window.sb.auth.signOut(); setAuthed(false); setPage('auth'); setTweak('page', 'auth'); }}>
               {t('tweaks.signOutPreview')}
             </button>
           )}
