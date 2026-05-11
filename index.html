@@ -14,6 +14,7 @@
 <script src="supabase.js"></script>
 <style>
   :root {
+    --coming-soon-overlay: rgba(255,255,255,0.6);
     --bg: #ffffff;
     --bg-warm: #f6f5f4;
     --bg-warm-2: #efeeec;
@@ -40,6 +41,7 @@
     --mono: 'JetBrains Mono', ui-monospace, monospace;
   }
   [data-theme="dark"] {
+    --coming-soon-overlay: rgba(26,26,26,0.65);
     --bg: #1a1a1a;
     --bg-warm: #232220;
     --bg-warm-2: #2c2b28;
@@ -130,7 +132,9 @@
     display: grid;
     grid-template-columns: 232px 1fr;
     height: 100%;
+    overflow: hidden;
     background: var(--bg);
+    transition: grid-template-columns 200ms ease;
   }
   .side {
     background: var(--bg-warm);
@@ -138,12 +142,43 @@
     padding: 18px 14px;
     display: flex; flex-direction: column;
     gap: 4px;
+    overflow: hidden;
+    transition: width 200ms ease, opacity 150ms ease, padding 200ms ease;
+    min-width: 0;
+  }
+  .side--closed {
+    width: 0;
+    padding-left: 0;
+    padding-right: 0;
+    border: none;
+    opacity: 0;
+    pointer-events: none;
+  }
+  /* Sidebar close button — shown on mobile only */
+  .side-close-btn {
+    display: none;
+    margin-left: auto;
+    width: 30px; height: 30px; border-radius: 6px;
+    align-items: center; justify-content: center;
+    color: var(--text-3);
+    transition: background 120ms ease, color 120ms ease;
+  }
+  .side-close-btn:hover { background: rgba(0,0,0,0.06); color: var(--text); }
+  [data-theme="dark"] .side-close-btn:hover { background: rgba(255,255,255,0.07); }
+  /* Backdrop for mobile drawer */
+  .sidebar-backdrop {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 199;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
   }
   .side-brand {
     display: flex; align-items: center; gap: 8px;
     padding: 4px 8px 18px;
   }
-  .side-brand img { height: 24px; }
+  .side-brand img { height: 48px; }
   .side-section {
     font-size: 11px; font-weight: 600;
     color: var(--text-3);
@@ -373,21 +408,19 @@
   .auth-stage {
     display: grid;
     grid-template-columns: minmax(380px, 1.05fr) minmax(440px, 1fr);
-    min-height: 760px;
+    height: 100%;
     background: var(--bg);
     color: var(--text);
   }
   .auth-aside {
     position: relative;
-    background:
-      radial-gradient(80% 60% at 90% 10%, rgba(244,98,42,0.55), transparent 60%),
-      radial-gradient(60% 50% at 10% 90%, rgba(244,98,42,0.32), transparent 60%),
-      linear-gradient(160deg, #2a1410 0%, #1a0d0a 60%, #0d0807 100%);
+    background: linear-gradient(160deg, #2a1410 0%, #1a0d0a 60%, #0d0807 100%);
     color: #fff;
     padding: 56px 56px 40px;
     display: flex; flex-direction: column;
     overflow: hidden;
   }
+  /* Grid overlay */
   .auth-aside::before {
     content: ""; position: absolute; inset: 0;
     background-image:
@@ -397,6 +430,16 @@
     mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
     -webkit-mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
     pointer-events: none;
+    z-index: 0;
+  }
+  /* Static orange blur orbs */
+  .auth-aside::after {
+    content: ""; position: absolute; inset: 0;
+    background:
+      radial-gradient(80% 60% at 88% 8%,  rgba(244,98,42,0.55), transparent 60%),
+      radial-gradient(60% 50% at 12% 92%, rgba(244,98,42,0.30), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
   }
   .auth-aside > * { position: relative; z-index: 1; }
   .auth-brand img { height: 26px; width: auto; }
@@ -444,6 +487,12 @@
   .auth-receipt .ar-bar-fill {
     height: 100%; border-radius: 99px;
     background: linear-gradient(90deg, #ff8a4a, #f4622a);
+    transform-origin: left center;
+    animation: ar-bar-grow 1.4s cubic-bezier(0.4, 0, 0.2, 1) 0.6s both;
+  }
+  @keyframes ar-bar-grow {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
   }
   .auth-receipt .ar-grade {
     display: flex; align-items: center; gap: 14px;
@@ -479,6 +528,7 @@
     padding: 36px 56px 28px;
     background: var(--bg);
     min-width: 0;
+    min-height: 0;
   }
   .auth-topnav {
     display: flex; justify-content: space-between; align-items: center;
@@ -669,11 +719,51 @@
   [data-theme="dark"] .logo-light { display: none; }
   [data-theme="dark"] .logo-dark  { display: block; }
 
-  /* The browser frame itself becomes single-column at very narrow viewports */
-  @media (max-width: 720px) {
-    .app { grid-template-columns: 1fr; }
-    .side { display: none; }
-    .stage { padding: 0; }
+  /* ========== Responsive breakpoints ========== */
+  @media (max-width: 768px) {
+    /* Force single-column grid — sidebar becomes fixed overlay */
+    .app { grid-template-columns: 1fr !important; }
+    /* Sidebar: fixed overlay drawer */
+    .side {
+      position: fixed; top: 0; left: 0; bottom: 0;
+      width: 252px !important;
+      padding: 18px 14px !important;
+      border-right: 1px solid var(--border-soft) !important;
+      border-left: none;
+      opacity: 1 !important;
+      pointer-events: none;
+      z-index: 200;
+      overflow-y: auto;
+      transform: translateX(-100%);
+      transition: transform 220ms ease !important;
+    }
+    .side--open {
+      transform: translateX(0) !important;
+      pointer-events: auto;
+      box-shadow: 4px 0 32px rgba(0,0,0,0.22);
+    }
+    .side--closed { transform: translateX(-100%) !important; }
+    .sidebar-backdrop.open { display: block; }
+    .side-close-btn { display: flex; }
+    /* Topbar */
+    .topbar { padding: 10px 14px; flex-wrap: wrap; gap: 8px; }
+    .topbar h1 { font-size: 18px; }
+    /* Page */
+    .page { padding: 16px 14px 28px; }
+    /* Browser chrome: hide URL bar on very small screens */
+    .b-url { display: none; }
+  }
+  @media (max-width: 520px) {
+    .topbar-right { gap: 4px; }
+    .topbar .sub { font-size: 11px; }
+    .b-chrome { padding: 8px 10px; gap: 8px; }
+    .b-tabs { max-width: 200px; }
+    .b-actions { display: none; }
+  }
+  /* Force single-column on home split/calc layouts at narrow widths */
+  @media (max-width: 680px) {
+    .home-split-grid { grid-template-columns: 1fr !important; }
+    .home-calc-grid  { grid-template-columns: 1fr !important; }
   }
 </style>
 </head>
@@ -683,9 +773,9 @@
 
 <script type="application/json" id="tweak-defaults">
 /*EDITMODE-BEGIN*/{
-  "theme": "light",
+  "theme": "dark",
   "accent": "#F4622A",
-  "homeVariation": "hero",
+  "homeVariation": "split",
   "density": "comfortable",
   "page": "auth"
 }/*EDITMODE-END*/

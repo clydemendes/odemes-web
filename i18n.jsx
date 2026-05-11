@@ -17,7 +17,7 @@ const TRANSLATIONS = {
       settings: 'Settings',
     },
     topbar: {
-      homeSub: 'Quick entry · April 26, 2026',
+      homeSub: 'Quick entry',
       transactionsSub: 'Search, filter, edit your history',
       recurringSub: 'Bills, subscriptions, regular income',
       reportSub: 'Grade, charts, insights',
@@ -101,8 +101,8 @@ const TRANSLATIONS = {
       receiptNet: 'Net',
     },
     home: {
-      welcomeBack: 'Welcome back, Julia',
-      subtitle: "Sunday, April 26 · You're on track for an A this month.",
+      welcomeBack: 'Welcome back',
+      subtitle: "You're on track for an A this month.",
       layout: 'Layout',
       recentActivity: 'Recent activity',
       recentSub: "Last entries · sync'd in real time",
@@ -279,7 +279,7 @@ const TRANSLATIONS = {
       settings: 'Definições',
     },
     topbar: {
-      homeSub: 'Entrada rápida · 26 de Abril de 2026',
+      homeSub: 'Entrada rápida',
       transactionsSub: 'Pesquisa, filtra e edita o teu histórico',
       recurringSub: 'Contas, subscrições e rendimentos regulares',
       reportSub: 'Nota, gráficos e análises',
@@ -363,8 +363,8 @@ const TRANSLATIONS = {
       receiptNet: 'Líquido',
     },
     home: {
-      welcomeBack: 'Bem-vinda de volta, Julia',
-      subtitle: 'Domingo, 26 de Abril · Estás no caminho certo para um A este mês.',
+      welcomeBack: 'Bem-vinda de volta',
+      subtitle: 'Estás no caminho certo para um A este mês.',
       layout: 'Apresentação',
       recentActivity: 'Atividade recente',
       recentSub: 'Últimas entradas · sincronizado em tempo real',
@@ -541,7 +541,7 @@ const TRANSLATIONS = {
       settings: 'Configuración',
     },
     topbar: {
-      homeSub: 'Entrada rápida · 26 de abril de 2026',
+      homeSub: 'Entrada rápida',
       transactionsSub: 'Busca, filtra y edita tu historial',
       recurringSub: 'Facturas, suscripciones e ingresos regulares',
       reportSub: 'Nota, gráficos y análisis',
@@ -625,8 +625,8 @@ const TRANSLATIONS = {
       receiptNet: 'Neto',
     },
     home: {
-      welcomeBack: 'Bienvenida de nuevo, Julia',
-      subtitle: 'Domingo, 26 de abril · Vas por buen camino para una A este mes.',
+      welcomeBack: 'Bienvenida de nuevo',
+      subtitle: 'Vas por buen camino para una A este mes.',
       layout: 'Diseño',
       recentActivity: 'Actividad reciente',
       recentSub: 'Últimas entradas · sincronizado en tiempo real',
@@ -803,7 +803,7 @@ const TRANSLATIONS = {
       settings: 'Paramètres',
     },
     topbar: {
-      homeSub: 'Saisie rapide · 26 avril 2026',
+      homeSub: 'Saisie rapide',
       transactionsSub: 'Cherchez, filtrez et modifiez votre historique',
       recurringSub: 'Factures, abonnements et revenus réguliers',
       reportSub: 'Note, graphiques et analyses',
@@ -887,8 +887,8 @@ const TRANSLATIONS = {
       receiptNet: 'Net',
     },
     home: {
-      welcomeBack: 'Bon retour, Julia',
-      subtitle: 'Dimanche 26 avril · Vous êtes sur la bonne voie pour un A ce mois-ci.',
+      welcomeBack: 'Bon retour',
+      subtitle: 'Vous êtes sur la bonne voie pour un A ce mois-ci.',
       layout: 'Mise en page',
       recentActivity: 'Activité récente',
       recentSub: 'Dernières entrées · synchronisé en temps réel',

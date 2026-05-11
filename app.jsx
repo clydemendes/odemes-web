@@ -74,32 +74,38 @@ function NewTxnSplitButton({ onPick }) {
 }
 
 function App() {
-  const { t } = window.I18n.useT();
+  const { t, lang } = window.I18n.useT();
   const defaults = React.useMemo(readDefaults, []);
   const [tweaks, setTweak] = useTweaks(defaults);
   const [page, setPage] = React.useState(defaults.page || 'home');
   const [authed, setAuthed] = React.useState(defaults.page !== 'auth');
+  const [user, setUser] = React.useState(null);
+  const [txCount, setTxCount] = React.useState(null);
+  const [recCount, setRecCount] = React.useState(null);
   /** Bump seq so Transactions page can open the quick-add modal from the top bar without navigating away. */
   const [txQuickAdd, setTxQuickAdd] = React.useState({ seq: 0, kind: 'expense' });
+  const [sidebarOpen, setSidebarOpen] = React.useState(() => window.innerWidth >= 768);
 
-  React.useEffect(() => { applyTheme(tweaks.theme); }, [tweaks.theme]);
+  React.useEffect(() => { applyTheme('dark'); }, []);
   React.useEffect(() => { applyAccent(tweaks.accent); }, [tweaks.accent]);
   React.useEffect(() => { document.documentElement.setAttribute('data-density', tweaks.density); }, [tweaks.density]);
 
   // Real Supabase auth state
   React.useEffect(() => {
     window.sb.auth.getSession().then(({ data: { session } }) => {
-      if (session) { setAuthed(true); setPage(p => p === 'auth' ? 'home' : p); }
+      if (session) { setAuthed(true); setUser(session.user); setPage(p => p === 'auth' ? 'home' : p); }
     });
     const { data: { subscription } } = window.sb.auth.onAuthStateChange((_event, session) => {
-      if (session) { setAuthed(true); setPage(p => p === 'auth' ? 'home' : p); }
-      else          { setAuthed(false); setPage('auth'); }
+      if (session) { setAuthed(true); setUser(session.user); setPage(p => p === 'auth' ? 'home' : p); }
+      else          { setAuthed(false); setUser(null); setPage('auth'); }
     });
     return () => subscription.unsubscribe();
   }, []);
 
+  const _localeMap = { en: 'en-US', pt: 'pt-PT', es: 'es-ES', fr: 'fr-FR' };
+  const _todayDateStr = new Date().toLocaleDateString(_localeMap[lang] || 'en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   const titles = {
-    home:         { title: t('nav.home'),         sub: t('topbar.homeSub') },
+    home:         { title: t('nav.home'),         sub: `${t('topbar.homeSub')} · ${_todayDateStr}` },
     transactions: { title: t('nav.transactions'), sub: t('topbar.transactionsSub') },
     recurring:    { title: t('nav.recurring'),    sub: t('topbar.recurringSub') },
     report:       { title: t('nav.report'),       sub: t('topbar.reportSub') },
@@ -107,11 +113,11 @@ function App() {
   };
 
   let content = null;
-  if (page === 'home')         content = <window.PageHome variation={tweaks.homeVariation} />;
-  if (page === 'transactions') content = <window.PageTransactions txQuickAdd={txQuickAdd} />;
-  if (page === 'recurring')    content = <window.PageRecurring />;
-  if (page === 'report')       content = <window.PageReport />;
-  if (page === 'settings')     content = <window.PageSettings tweaks={tweaks} setTweak={setTweak} />;
+  if (page === 'home')         content = <window.PageHome variation={tweaks.homeVariation} user={user} setPage={setPage} />;
+  if (page === 'transactions') content = <window.PageTransactions txQuickAdd={txQuickAdd} user={user} onCountChange={setTxCount} />;
+  if (page === 'recurring')    content = <window.PageRecurring user={user} onCountChange={setRecCount} />;
+  if (page === 'report')       content = <window.PageReport user={user} />;
+  if (page === 'settings')     content = <window.PageSettings tweaks={tweaks} setTweak={setTweak} user={user} />;
 
   if (page === 'auth' || !authed) {
     return (
@@ -128,15 +134,6 @@ function App() {
     return (
       <TweaksPanel title="Tweaks">
         <TweakSection label={t('tweaks.appearance')}>
-          <TweakRadio
-            label={t('tweaks.theme')}
-            value={tweaks.theme}
-            onChange={(v) => setTweak('theme', v)}
-            options={[
-              { value: 'light', label: t('tweaks.light') },
-              { value: 'dark',  label: t('tweaks.dark') },
-            ]}
-          />
           <TweakColor label={t('tweaks.accent')} value={tweaks.accent} onChange={(v) => setTweak('accent', v)} />
           <TweakRadio
             label={t('tweaks.density')}
@@ -188,31 +185,31 @@ function App() {
   return (
     <div className="stage">
       <div className="browser">
-        <div className="app">
-          <Sidebar page={page} setPage={setPage} />
-          <main style={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+        <div
+          className={`sidebar-backdrop${sidebarOpen ? ' open' : ''}`}
+          onClick={() => setSidebarOpen(false)}
+        />
+        <div className="app" style={{ gridTemplateColumns: sidebarOpen ? '232px 1fr' : '0px 1fr' }}>
+          <Sidebar page={page} setPage={setPage} user={user} txCount={txCount} recCount={recCount}
+            open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+          <main style={{ minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <TopBar
               title={titles[page].title}
               sub={titles[page].sub}
+              onMenuToggle={() => setSidebarOpen(o => !o)}
               right={<>
-                <button className="icon-btn"><window.Icons.search size={16} /></button>
-                <button className="icon-btn"><window.Icons.bell size={16} /></button>
-                {page !== 'home' && (
+                {page !== 'home' && page !== 'transactions' && page !== 'recurring' && (
                   <NewTxnSplitButton
                     onPick={(k) => {
                       if (k === 'recurring') setPage('recurring');
                       else if (k === 'import') setPage('settings');
-                      else if (page === 'transactions' && (k === 'expense' || k === 'income')) {
-                        setTxQuickAdd((s) => ({ seq: s.seq + 1, kind: k }));
-                      } else {
-                        setPage('home');
-                      }
+                      else setPage('home');
                     }}
                   />
                 )}
               </>}
             />
-            <div style={{ flex: 1, minHeight: 0 }}>{content}</div>
+            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>{content}</div>
           </main>
         </div>
       </div>

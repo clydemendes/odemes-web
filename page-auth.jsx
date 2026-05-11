@@ -19,52 +19,92 @@ function AppleMark({ size = 18 }) {
   );
 }
 
-function FieldEye({ visible, onToggle, t }) {
+
+const AUTH_LANG_OPTIONS = [
+  { code: 'en', label: 'English' },
+  { code: 'pt', label: 'Português' },
+  { code: 'es', label: 'Español' },
+  { code: 'fr', label: 'Français' },
+];
+
+function AuthLangDropdown() {
+  const { lang, setLang } = window.I18n.useT();
+  const [open, setOpen] = React.useState(false);
+  const ref = React.useRef(null);
+
+  React.useEffect(() => {
+    if (!open) return;
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  const current = AUTH_LANG_OPTIONS.find(l => l.code === lang) || AUTH_LANG_OPTIONS[0];
+
   return (
-    <button type="button" className="auth-eye" onClick={onToggle} aria-label={visible ? t('auth.hidePassword') : t('auth.showPassword')}>
-      {visible
-        ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3l18 18"/><path d="M10.6 10.6a2 2 0 002.8 2.8"/><path d="M9.9 5.1A10.4 10.4 0 0112 5c5.5 0 9 5 9 7 0 .9-.7 2.1-1.8 3.3M6.6 6.6C4.2 8 3 10.3 3 12c0 2 3.5 7 9 7 1.6 0 3-.4 4.2-1"/></svg>
-        : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>}
-    </button>
+    <div ref={ref} style={{ position: 'relative' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '7px 12px', borderRadius: 8,
+          background: 'transparent', border: '1px solid rgba(128,128,128,0.25)',
+          fontSize: 13, fontWeight: 500, color: 'inherit', cursor: 'pointer',
+        }}
+      >
+        <window.Icons.globe size={14} />
+        {current.label}
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"
+          style={{ opacity: 0.5, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </button>
+      {open && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 6px)', right: 0,
+          background: 'var(--bg-warm, #fff)', border: '1px solid rgba(128,128,128,0.2)',
+          borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+          minWidth: 148, zIndex: 300, overflow: 'hidden',
+        }}>
+          {AUTH_LANG_OPTIONS.map((l, i) => (
+            <button
+              key={l.code}
+              onClick={() => { setLang(l.code); setOpen(false); }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                width: '100%', padding: '9px 14px', textAlign: 'left',
+                background: lang === l.code ? 'var(--accent-tint)' : 'transparent',
+                color: lang === l.code ? 'var(--accent-text)' : 'inherit',
+                fontSize: 13, fontWeight: lang === l.code ? 600 : 400,
+                borderBottom: i < AUTH_LANG_OPTIONS.length - 1 ? '1px solid rgba(128,128,128,0.12)' : 'none',
+                cursor: 'pointer',
+              }}
+            >
+              <span style={{ width: 14, display: 'flex', alignItems: 'center' }}>
+                {lang === l.code && <window.Icons.check size={12} />}
+              </span>
+              {l.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
 function PageAuth({ onSignedIn }) {
   const { t } = window.I18n.useT();
-  const [mode, setMode] = React.useState('signin');
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [name, setName] = React.useState('');
-  const [showPw, setShowPw] = React.useState(false);
-  const [agree, setAgree] = React.useState(false);
   const [loading, setLoading] = React.useState(null);
-  const [error, setError] = React.useState(null);
+  const [error, setError]     = React.useState(null);
 
-  const isSignup = mode === 'signup';
-  const valid = /\S+@\S+\.\S+/.test(email) && password.length >= 6 && (!isSignup || (name.trim().length > 1 && agree));
-
-  const signInWithOAuth = async (provider) => {
-    setLoading(provider);
+  const signInWithGoogle = async () => {
+    setLoading('google');
     setError(null);
     const { error } = await window.sb.auth.signInWithOAuth({
-      provider,
+      provider: 'google',
       options: { redirectTo: window.location.origin + window.location.pathname },
     });
     if (error) { setError(error.message); setLoading(null); }
-    // no else — browser redirects, loading stays until navigation
-  };
-
-  const submit = async (e) => {
-    e && e.preventDefault();
-    if (!valid) return;
-    setLoading('email');
-    setError(null);
-    const { error } = isSignup
-      ? await window.sb.auth.signUp({ email, password, options: { data: { full_name: name } } })
-      : await window.sb.auth.signInWithPassword({ email, password });
-    setLoading(null);
-    if (error) setError(error.message);
-    // onAuthStateChange in app.jsx handles the navigation on success
   };
 
   return (
@@ -93,137 +133,54 @@ function PageAuth({ onSignedIn }) {
               <div style={{ fontSize: 12, opacity: 0.7 }}>{t('auth.savedTarget')}</div>
             </div>
           </div>
-          <div className="ar-line">
-            <span>{t('auth.receiptIncome')}</span><span className="mono">+$5,420</span>
-          </div>
-          <div className="ar-line">
-            <span>{t('auth.receiptExpenses')}</span><span className="mono">−$2,620</span>
-          </div>
-          <div className="ar-line ar-line-total">
-            <span>{t('auth.receiptNet')}</span><span className="mono">+$2,800</span>
-          </div>
+          <div className="ar-line"><span>{t('auth.receiptIncome')}</span><span className="mono">+$5,420</span></div>
+          <div className="ar-line"><span>{t('auth.receiptExpenses')}</span><span className="mono">−$2,620</span></div>
+          <div className="ar-line ar-line-total"><span>{t('auth.receiptNet')}</span><span className="mono">+$2,800</span></div>
         </div>
 
-        <div className="auth-aside-foot">
-          <span className="dot-tiny"/> {t('auth.trusted')}
-        </div>
       </aside>
 
-      {/* Right — form */}
+      {/* Right — sign-in */}
       <section className="auth-main">
         <div className="auth-topnav">
           <div className="auth-brand-mob">
             <img src="assets/logo-black.png" alt="Odemes" className="logo-light" />
             <img src="assets/logo-white.png" alt="Odemes" className="logo-dark" />
           </div>
-          <div className="auth-toggle" role="tablist">
-            <button role="tab" aria-selected={!isSignup} className={!isSignup ? 'on' : ''} onClick={() => setMode('signin')}>{t('auth.signIn')}</button>
-            <button role="tab" aria-selected={isSignup} className={isSignup ? 'on' : ''} onClick={() => setMode('signup')}>{t('auth.signUp')}</button>
-          </div>
+          <AuthLangDropdown />
         </div>
 
         <div className="auth-card">
           <div className="auth-card-head">
-            <h2>{isSignup ? t('auth.createAccount') : t('auth.welcomeBack')}</h2>
-            <p>{isSignup ? t('auth.createDesc') : t('auth.welcomeDesc')}</p>
+            <h2>{t('auth.welcomeBack')}</h2>
+            <p>{t('auth.welcomeDesc')}</p>
           </div>
 
-          <button className="auth-oauth" onClick={() => signInWithOAuth('google')} disabled={loading !== null}>
+          <button className="auth-oauth" onClick={signInWithGoogle} disabled={loading !== null}>
             {loading === 'google' ? <span className="auth-spin" /> : <GoogleMark />}
             <span>{loading === 'google' ? t('auth.connecting') : t('auth.continueGoogle')}</span>
           </button>
-          <button className="auth-oauth auth-oauth-apple" onClick={() => signInWithOAuth('apple')} disabled={loading !== null}>
-            {loading === 'apple' ? <span className="auth-spin" /> : <AppleMark />}
-            <span>{loading === 'apple' ? t('auth.connecting') : t('auth.continueApple')}</span>
+
+          <button className="auth-oauth auth-oauth-apple" disabled style={{ opacity: 0.45, cursor: 'not-allowed' }}>
+            <AppleMark />
+            <span>{t('auth.continueApple')}</span>
+            <span style={{
+              marginLeft: 'auto', padding: '2px 8px', borderRadius: 9999,
+              background: 'var(--bg-warm-2, rgba(128,128,128,0.15))',
+              fontSize: 10, fontWeight: 600, letterSpacing: '0.05em',
+              textTransform: 'uppercase', color: 'var(--text-3)',
+            }}>{t('auth.soon')}</span>
           </button>
+
+          <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-3)', marginTop: 10 }}>
+            Apple Sign In is coming soon.
+          </p>
 
           {error && (
             <div style={{ fontSize: 13, color: 'var(--expense)', background: 'var(--expense-tint)', padding: '10px 14px', borderRadius: 8, marginTop: 4 }}>
               {error}
             </div>
           )}
-
-          <div className="auth-or"><span>{t('auth.orEmail')}</span></div>
-
-          <form onSubmit={submit} className="auth-form" noValidate>
-            {isSignup && (
-              <label className="auth-field">
-                <span>{t('auth.fullName')}</span>
-                <input
-                  type="text"
-                  autoComplete="name"
-                  placeholder={t('auth.fullNamePlaceholder')}
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-              </label>
-            )}
-
-            <label className="auth-field">
-              <span>{t('auth.email')}</span>
-              <input
-                type="email"
-                autoComplete="email"
-                placeholder={t('auth.emailPlaceholder')}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </label>
-
-            <label className="auth-field">
-              <span>
-                {t('auth.password')}
-                {!isSignup && <a href="#" className="auth-tiny-link" onClick={(e) => e.preventDefault()}>{t('auth.forgot')}</a>}
-              </span>
-              <div className="auth-field-wrap">
-                <input
-                  type={showPw ? 'text' : 'password'}
-                  autoComplete={isSignup ? 'new-password' : 'current-password'}
-                  placeholder={isSignup ? t('auth.atLeast6') : '••••••••'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                />
-                <FieldEye visible={showPw} onToggle={() => setShowPw(!showPw)} t={t} />
-              </div>
-              {isSignup && (
-                <div className="auth-pw-meter" data-strength={
-                  password.length >= 12 ? 'strong' :
-                  password.length >= 8  ? 'good' :
-                  password.length >= 6  ? 'fair' : 'weak'
-                }>
-                  <div /><div /><div /><div />
-                </div>
-              )}
-            </label>
-
-            {isSignup && (
-              <label className="auth-check">
-                <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
-                <span>
-                  {t('auth.agreePrefix')}{' '}
-                  <a href="#" onClick={(e) => e.preventDefault()}>{t('auth.terms')}</a>
-                  {' '}{t('auth.and')}{' '}
-                  <a href="#" onClick={(e) => e.preventDefault()}>{t('auth.privacy')}</a>.
-                </span>
-              </label>
-            )}
-
-            <button type="submit" className="auth-submit" disabled={!valid || loading !== null}>
-              {loading === 'email'
-                ? <><span className="auth-spin auth-spin-light" /> {isSignup ? t('auth.creatingAccount') : t('auth.signingIn')}</>
-                : (isSignup ? t('auth.createBtn') : t('auth.signInBtn'))}
-            </button>
-          </form>
-
-          <div className="auth-switch">
-            {isSignup
-              ? <>{t('auth.alreadyHave')} <a href="#" onClick={(e) => { e.preventDefault(); setMode('signin'); }}>{t('auth.signIn')}</a></>
-              : <>{t('auth.newToOdemes')} <a href="#" onClick={(e) => { e.preventDefault(); setMode('signup'); }}>{t('auth.createLink')}</a></>}
-          </div>
         </div>
 
         <footer className="auth-foot">
